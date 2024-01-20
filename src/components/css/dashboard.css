@@ -1,0 +1,160 @@
+
+
+::-webkit-scrollbar {
+    display: none;
+  }
+
+#section-chat {
+    max-height: calc(100vh - 9.6vh);
+    height: 100vh;
+    display: flex;
+}
+
+.users {
+    flex: 1;
+    padding: 20px 10px 20px 20px;
+    display: flex;
+    flex-direction: column;
+    /* justify-content: space-between; */
+}
+
+.label-users {
+    padding: 20px;
+}
+
+.chats {
+    flex: 2;
+    padding: 20px 20px 20px 10px;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-users {
+    /* height: auto; */
+    overflow: scroll;
+    flex: 1;
+}
+
+.user {
+    padding: 10px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    border-bottom: 1px solid #d3d3d3;
+}
+
+.user-header {
+    padding: 10px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    border-bottom: 1px solid #d3d3d3;
+    background-color: #ffffff;
+}
+
+.user:hover {
+    background-color: rgb(244, 244, 244);
+    cursor: pointer;
+}
+
+.photo {
+    width: 40px;
+    height: 40px;
+    background-color: #a4a4a4;
+    border-radius: 50%;
+}
+
+.username-message {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.username span {
+    font-weight: bold;
+}
+
+.footer {
+    border-top: 1px solid #ccc;
+    flex-shrink: 0;
+    text-align: center;
+    padding-top: 20px;
+}
+
+.chat {
+    overflow: scroll;
+    flex: 1;
+}
+
+.input {
+    flex-shrink: 0;
+}
+
+.row-receiver {
+    padding: 10px;
+    text-align: start;
+}
+ 
+.row-sender {
+    padding: 10px;
+    text-align: end;
+}
+
+.waduh {
+    box-sizing: border-box;
+}
+
+.chat-input {
+    flex: 2;
+    padding: 10px 0px;
+}
+
+.chat-button {
+    flex: 1;
+}
+.chat-input textarea {
+    padding: 10px;
+    border: none;
+    border-radius: 10px;
+    background-color: #eef5ff;
+    display: flex;
+}
+
+textarea:focus {
+    outline: none
+  }
+
+#form-chat {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.chat-button button {
+    background-color: #0053c7;
+    color: #ffffff;
+    border-radius: 10px;
+    padding: 10px;
+    width: 100%;
+    border: none;
+}
+
+.chat #chat {
+    padding: 10px;
+    background-color: hsl(214, 100%, 69%);
+    border-radius: 20px;
+    color: #ffffff;
+}
+
+#loadChat, #chat {
+    margin: 10px 0px;
+}
+
+#time {
+    padding-left: 10px;
+    display: inline;
+    font-size: 12px
+}
+
+
+
