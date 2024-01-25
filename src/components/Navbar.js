@@ -1,5 +1,4 @@
 import './css/navbar.css';
-// import axios from 'axios';
 import React from 'react';
 import Cookies from 'js-cookie';
 import { NavLink, useNavigate  } from 'react-router-dom';

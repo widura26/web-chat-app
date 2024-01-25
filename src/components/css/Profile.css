@@ -1,0 +1,14 @@
+.profile {
+    height: 100%;
+}
+.picture {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+}
+.user-picture {
+    background-color: #3a3a3a;
+    width: 100px;
+    height: 100px;
+    border-radius: 50px;
+}

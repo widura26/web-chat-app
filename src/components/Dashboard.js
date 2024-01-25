@@ -5,7 +5,9 @@ import Cookies from 'js-cookie';
 import { socket } from '../socket';
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import User from './User';
+// import User from './User';
+import io from 'socket.io-client';
+// import Profile from './Profile';
 
 const Dashboard = () => {
 
@@ -17,8 +19,11 @@ const Dashboard = () => {
     const [loadChat, setLoadChats] = useState([]);
     const [chatMessages, setChatMessages] = useState([]);
     const [receiver, setReceiver] = useState('');
+    // const [userId, setUserId] = useState('');
+    const [users, setUsers] = useState([]);
+    const [chats, setChats] = useState([]);
+    const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
-
     const cookie = Cookies.get('accessToken');
     
     const accessToken = useCallback(async () => {
@@ -30,6 +35,7 @@ const Dashboard = () => {
                     }
                 });
                 setLoggedInuser(access.data.username);
+                // setUserId(access.data.id)
             }else {
                 navigate("/");
             }       
@@ -38,7 +44,7 @@ const Dashboard = () => {
                 console.log(error)
             }
         }
-    }, [cookie, navigate])
+    }, [navigate, cookie]);
 
     const userProfile = useCallback(() => {
         if (cookie) {
@@ -46,23 +52,63 @@ const Dashboard = () => {
             setSender(decodedToken);
           }
     }, [cookie])
+
+    const loadUsers = useCallback(async () => {
+        try {
+            const apiUsers = await axios.get('http://localhost:5000/users', {
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${cookie}`,
+                },
+            });
+            if(apiUsers.data.data !== null){
+                setUsers(apiUsers.data.data);
+                setLoading(false);
+            }
+        } catch (error) {
+            alert(error)
+        }
+    }, [cookie]);
+
+    const allChats = useCallback(async () => {
+        try {
+            const all = await axios.get('http://localhost:5000/chats', {
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${cookie}`,
+                },
+            })
+            const allMessage = all.data.data;
+            setChats(allMessage);
+
+        } catch (error) {
+            console.log(error);
+        }
+    }, [cookie])
     
     useEffect(() => {
+        document.title = 'Dashboard'
         accessToken();
         userProfile();
-        socket.on("receive_message", (response) => {
-            // setMessagesReceive((list) => [...list, response.data.data]);
-            setChatMessages([...chatMessages, response.data.data]);
-        })
+        loadUsers();
         socket.on('loadChats', (response) => {
             const chats = response.chats;
             setLoadChats(chats);
         })
+        socket.on("receive_message", (response) => {
+            setChatMessages([...chatMessages, response.data.data]);
+        })
+        allChats();
+        io('http://localhost:5000', {
+            auth: {
+                token: cookie
+            }
+        })
         return () => {
+            socket.off("loadChats");
             socket.off("receive_message");
-            socket.off('loadChats');
         }
-    }, [accessToken, userProfile, chatMessages])
+    }, [accessToken, userProfile, chatMessages, cookie, loadUsers, allChats])
 
     const showChatContainer = (e) => {
         setShowChat(true);
@@ -94,17 +140,19 @@ const Dashboard = () => {
         } catch (error) {
             console.log(error);
         }
-    } 
+    }
 
     const ContainerChat = () => {
         return (
             <>
                 <div className="user-profile">
                     <div className="user-header">
-                        <div className="photo"></div>
-                        <div className="username-message">
-                            <div className="username">
-                                <span>{username}</span>
+                        <div className='photo-username'>
+                            <div className="photo"></div>
+                            <div className="username-message">
+                                <div className="username">
+                                    <span>{username}</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -126,17 +174,16 @@ const Dashboard = () => {
                                 );
                             })
                         }
-                        {chatMessages.reverse().map((message) => (
-                            <div
-                            key={message._id}
-                            className={`row ${message.sender_id === sender.id ? 'row-sender' : 'row-receiver'}`}
-                            id='loadChat'
-                            >
-                                <span id='chat'>
-                                    {message.message}
-                                    <span id='time'>{message.createdAt.slice(11, 19)}</span>
-                                </span>
-                            </div>
+                        {chatMessages.slice().reverse().map((message) => (
+                            ((sender.id === message.sender_id && receiver === message.receiver_id) || 
+                            (receiver === message.sender_id && sender.id === message.receiver_id)) && (
+                                <div key={message._id} className={`row ${message.sender_id === sender.id ? 'row-sender' : 'row-receiver'}`} id='loadChat'>
+                                    <span id='chat'>
+                                        {message.message}
+                                        <span id='time'>{message.createdAt.slice(11, 19)}</span>
+                                    </span>
+                                </div>
+                            )
                         ))}
                 </div>
 
@@ -163,7 +210,8 @@ const Dashboard = () => {
     return (
         <section id="section-chat">
             <div className="users">
-                    <div className="user-header">
+                <div className="user-header">
+                    <div className='photo-username'>
                         <div className="photo"></div>
                         <div className="username-message">
                             <div className="username">
@@ -171,12 +219,44 @@ const Dashboard = () => {
                             </div>
                         </div>
                     </div>
+                    <span data-icon="menu" className="three-dots">
+                        <svg viewBox="0 0 24 24" height="24" width="24" preserveAspectRatio="xMidYMid meet" version="1.1" x="0px" y="0px" enableBackground="new 0 0 24 24">
+                            <title>menu</title>
+                            <path fill="currentColor" d="M12,7c1.104,0,2-0.896,2-2c0-1.105-0.895-2-2-2c-1.104,0-2,0.894-2,2 C10,6.105,10.895,7,12,7z M12,9c-1.104,0-2,0.894-2,2c0,1.104,0.895,2,2,2c1.104,0,2-0.896,2-2C13.999,9.895,13.104,9,12,9z M12,15 c-1.104,0-2,0.894-2,2c0,1.104,0.895,2,2,2c1.104,0,2-0.896,2-2C13.999,15.894,13.104,15,12,15z">
+                            </path>
+                        </svg>
+                    </span>
+                    
+                </div>
                 <div className="chat-users">
-                    <User cookie={cookie} showChatContainer={showChatContainer}/>
+                    {/* <User cookie={cookie} showChatContainer={showChatContainer} senderId={userId} receiverId={receiver} chats={loadChat}/> */}
+                    {   loading ? ( <p>loading...</p> ) : (
+                        users.map(user => (
+                            <div className="user" key={user._id} id={user._id} onClick={showChatContainer}>
+                                <div className="photo"></div>
+                                <div className="username-message">
+                                    <div className="username">
+                                        <span>{user.username}</span>
+                                    </div>
+                                    <div className="message">
+                                        {
+                                            chats.filter((chat) => ( 
+                                                    (sender.id === chat.sender_id && user._id === chat.receiver_id) || 
+                                                    (user._id === chat.sender_id && sender.id === chat.receiver_id)
+                                                    )).slice(-1).map((chat) => (
+                                                        <span key={chat._id}>{chat.message}</span>
+                                                    ))
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        )) ?? 'null' )
+                    }
                 </div>
                 <div className="footer">
                     <p>Chat Application 2023</p>
                 </div>
+                {/* <Profile/> */}
             </div>
             
             <div className="chats">

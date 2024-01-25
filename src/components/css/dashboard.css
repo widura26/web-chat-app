@@ -48,13 +48,23 @@
     display: flex;
     gap: 10px;
     align-items: center;
+    justify-content: space-between;
     border-bottom: 1px solid #d3d3d3;
     background-color: #ffffff;
 }
 
+.photo-username {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
 .user:hover {
-    background-color: rgb(244, 244, 244);
     cursor: pointer;
+}
+
+.user:active {
+    background-color: rgb(244, 244, 244);
 }
 
 .photo {
@@ -154,6 +164,17 @@ textarea:focus {
     padding-left: 10px;
     display: inline;
     font-size: 12px
+}
+
+.three-dots {
+    padding: 10px;
+    display: flex;
+    cursor: pointer;
+    border-radius: 50px;
+}
+
+.three-dots:active {
+    background: #dadada;
 }
 
 
