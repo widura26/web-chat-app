@@ -9,8 +9,6 @@ import Home from './pages/home';
 import React from 'react';
 
 function App() {
-  // axios.defaults.baseURL = 'http://localhost:3000';
-  // axios.defaults.withCredentials = true;
   return (
       <Router>
         <Navbar />

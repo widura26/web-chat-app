@@ -3,27 +3,30 @@ import { jwtDecode } from 'jwt-decode';
 import './css/dashboard.css';
 import Cookies from 'js-cookie';
 import { socket } from '../socket';
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-// import User from './User';
+import vector from '../pages/chat.png'
 import io from 'socket.io-client';
-// import Profile from './Profile';
+import Dropdown from './Dropdown';
+import Profile from './Profile';
+import User from './User';
 
 const Dashboard = () => {
 
     const [sender, setSender] = useState('');
     const [loggedInUser, setLoggedInuser] = useState('');
+    const [profile, setProfile] = useState();
     const [username, setUsername] = useState ('');
     const [message, setMessage] = useState('');
     const [showChat, setShowChat] = useState(false);
-    const [loadChat, setLoadChats] = useState([]);
     const [chatMessages, setChatMessages] = useState([]);
     const [receiver, setReceiver] = useState('');
-    // const [userId, setUserId] = useState('');
-    const [users, setUsers] = useState([]);
+    const [showMenu, setShowUserMenu] = useState(false);
+    // const [users, setUsers] = useState([]);
     const [chats, setChats] = useState([]);
-    const [loading, setLoading] = useState(true);
+    // const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
+    const boxRef = useRef(null);
     const cookie = Cookies.get('accessToken');
     
     const accessToken = useCallback(async () => {
@@ -53,22 +56,22 @@ const Dashboard = () => {
           }
     }, [cookie])
 
-    const loadUsers = useCallback(async () => {
-        try {
-            const apiUsers = await axios.get('http://localhost:5000/users', {
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${cookie}`,
-                },
-            });
-            if(apiUsers.data.data !== null){
-                setUsers(apiUsers.data.data);
-                setLoading(false);
-            }
-        } catch (error) {
-            alert(error)
-        }
-    }, [cookie]);
+    // const loadUsers = useCallback(async () => {
+    //     try {
+    //         const apiUsers = await axios.get('http://localhost:5000/users', {
+    //             headers: {
+    //                 "Content-Type": "application/json",
+    //                 Authorization: `Bearer ${cookie}`,
+    //             },
+    //         });
+    //         if(apiUsers.data.data !== null){
+    //             setUsers(apiUsers.data.data);
+    //             setLoading(false);
+    //         }
+    //     } catch (error) {
+    //         alert(error)
+    //     }
+    // }, [cookie]);
 
     const allChats = useCallback(async () => {
         try {
@@ -90,25 +93,35 @@ const Dashboard = () => {
         document.title = 'Dashboard'
         accessToken();
         userProfile();
-        loadUsers();
+        // loadUsers();
+        allChats();
         socket.on('loadChats', (response) => {
             const chats = response.chats;
-            setLoadChats(chats);
+            setChatMessages(chats);
         })
         socket.on("receive_message", (response) => {
             setChatMessages([...chatMessages, response.data.data]);
         })
-        allChats();
         io('http://localhost:5000', {
             auth: {
                 token: cookie
             }
         })
+        const handleClickOutside = (event) => {
+            if (boxRef.current && !boxRef.current.contains(event.target)) {
+              // Klik di luar box, sembunyikan box
+              setShowUserMenu(false);
+            }
+        };
+        // Tambahkan event listener pada dokumen
+        document.addEventListener('click', handleClickOutside);
         return () => {
+            handleClickOutside();
+            allChats();
             socket.off("loadChats");
             socket.off("receive_message");
         }
-    }, [accessToken, userProfile, chatMessages, cookie, loadUsers, allChats])
+    }, [accessToken, userProfile, chatMessages, cookie, allChats])
 
     const showChatContainer = (e) => {
         setShowChat(true);
@@ -121,6 +134,15 @@ const Dashboard = () => {
         })
         setUsername(name);
         setReceiver(userId);
+    }
+    
+    const showUserMenu = () => {
+        setShowUserMenu(!showMenu);
+    }
+
+    const showProfile = () => {
+        setProfile(true);
+        setShowUserMenu(false)
     }
 
     const saveChat = async (e) => {
@@ -158,23 +180,7 @@ const Dashboard = () => {
                     </div>
                 </div>
                 <div className="chat">
-                        {
-                            loadChat.map((chat) => {
-                                return (
-                                <div
-                                    key={chat._id}
-                                    className={`row ${chat.sender_id === sender.id ? 'row-sender' : 'row-receiver'}`}
-                                    id='loadChat'
-                                >
-                                    <span id='chat'>
-                                        {chat.message}
-                                        <span id='time'>{chat.createdAt.slice(11, 19)}</span>
-                                    </span>
-                                </div>
-                                );
-                            })
-                        }
-                        {chatMessages.slice().reverse().map((message) => (
+                        {chatMessages.reverse().map((message) => (
                             ((sender.id === message.sender_id && receiver === message.receiver_id) || 
                             (receiver === message.sender_id && sender.id === message.receiver_id)) && (
                                 <div key={message._id} className={`row ${message.sender_id === sender.id ? 'row-sender' : 'row-receiver'}`} id='loadChat'>
@@ -186,7 +192,6 @@ const Dashboard = () => {
                             )
                         ))}
                 </div>
-
                 <div className="waduh">
                     <form id='form-chat' onSubmit={saveChat}>
                         <div className='chat-input'>
@@ -195,7 +200,7 @@ const Dashboard = () => {
                                 value={message}
                                 onChange={e => setMessage(e.target.value)}
                                 rows="3"
-                                cols="130"
+                                cols="120"
                             />
                         </div>
                         <div className='chat-button'>
@@ -210,27 +215,25 @@ const Dashboard = () => {
     return (
         <section id="section-chat">
             <div className="users">
-                <div className="user-header">
-                    <div className='photo-username'>
-                        <div className="photo"></div>
-                        <div className="username-message">
-                            <div className="username">
-                                <span>{loggedInUser}</span>
-                            </div>
-                        </div>
+                <div className="header">
+                    <div className="input">
+                        <input type='text' className='input-search-user' placeholder='Cari user'/>
                     </div>
-                    <span data-icon="menu" className="three-dots">
-                        <svg viewBox="0 0 24 24" height="24" width="24" preserveAspectRatio="xMidYMid meet" version="1.1" x="0px" y="0px" enableBackground="new 0 0 24 24">
-                            <title>menu</title>
-                            <path fill="currentColor" d="M12,7c1.104,0,2-0.896,2-2c0-1.105-0.895-2-2-2c-1.104,0-2,0.894-2,2 C10,6.105,10.895,7,12,7z M12,9c-1.104,0-2,0.894-2,2c0,1.104,0.895,2,2,2c1.104,0,2-0.896,2-2C13.999,9.895,13.104,9,12,9z M12,15 c-1.104,0-2,0.894-2,2c0,1.104,0.895,2,2,2c1.104,0,2-0.896,2-2C13.999,15.894,13.104,15,12,15z">
-                            </path>
-                        </svg>
-                    </span>
-                    
+                    <div className='menuUser'>
+                        <span data-icon="menu" className='three-dots' onClick={showUserMenu}>
+                            <svg viewBox="0 0 24 24" height="20" width="20" preserveAspectRatio="xMidYMid meet" version="1.1" x="0px" y="0px" enableBackground="new 0 0 24 24">
+                                <title>menu</title>
+                                <path fill="currentColor" d="M12,7c1.104,0,2-0.896,2-2c0-1.105-0.895-2-2-2c-1.104,0-2,0.894-2,2 C10,6.105,10.895,7,12,7z M12,9c-1.104,0-2,0.894-2,2c0,1.104,0.895,2,2,2c1.104,0,2-0.896,2-2C13.999,9.895,13.104,9,12,9z M12,15 c-1.104,0-2,0.894-2,2c0,1.104,0.895,2,2,2c1.104,0,2-0.896,2-2C13.999,15.894,13.104,15,12,15z">
+                                </path>
+                            </svg>
+                        </span>
+                        { showMenu && <Dropdown showProfile={showProfile}/>}
+                    </div>
                 </div>
+                { profile && <Profile username={loggedInUser} />}
                 <div className="chat-users">
-                    {/* <User cookie={cookie} showChatContainer={showChatContainer} senderId={userId} receiverId={receiver} chats={loadChat}/> */}
-                    {   loading ? ( <p>loading...</p> ) : (
+                    <User cookie={cookie} chats={chats} sender={sender} showChatContainer={showChatContainer}/>
+                    {/* {   loading ? ( <p>loading...</p> ) : (
                         users.map(user => (
                             <div className="user" key={user._id} id={user._id} onClick={showChatContainer}>
                                 <div className="photo"></div>
@@ -244,24 +247,27 @@ const Dashboard = () => {
                                                     (sender.id === chat.sender_id && user._id === chat.receiver_id) || 
                                                     (user._id === chat.sender_id && sender.id === chat.receiver_id)
                                                     )).slice(-1).map((chat) => (
-                                                        <span key={chat._id}>{chat.message}</span>
+                                                        <span key={chat._id}>{chat.message || 'hai'}</span>
                                                     ))
                                         }
                                     </div>
                                 </div>
                             </div>
                         )) ?? 'null' )
-                    }
+                    } */}
                 </div>
                 <div className="footer">
                     <p>Chat Application 2023</p>
                 </div>
-                {/* <Profile/> */}
             </div>
             
             <div className="chats">
                 {
-                    showChat && ContainerChat()
+                    (showChat && ContainerChat()) || (
+                        <div className='image'>
+                            <img src={vector} alt='chat' className='chat-image'/>
+                        </div>
+                    )
                 }
             </div>
         </section>

@@ -1,0 +1,30 @@
+.menuUser {
+    position: relative;
+}
+
+.dropdown {
+    position: absolute;
+    margin-top: 10px;
+    right: 1px;
+    z-index: 1;
+    padding: 20px;
+    background-color: hsl(214, 100%, 69%);
+    border-radius: 20px;
+    width: 200px;
+}
+
+.userMenu {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.userMenu li {
+    list-style-type: none;
+}
+
+.userMenu button {
+    color: #fff;
+    background: none;
+    border: none;
+}
+
