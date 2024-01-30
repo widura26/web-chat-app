@@ -33,6 +33,10 @@
     flex: 1;
 }
 
+.users-in-chat {
+    display: none;
+}
+
 .user {
     padding: 10px;
     margin: 20px 10px;
@@ -217,6 +221,33 @@ textarea:focus {
     -webkit-box-orient: vertical;
     overflow: hidden;
     -webkit-line-clamp: 1;
+}
+
+.user-menu {
+    display: flex;
+    gap: 10px;
+}
+
+.add-contact span {
+    padding: 10px;
+    border-radius: 50px;
+}
+
+.add-contact span:hover {
+    cursor: pointer;
+}
+
+.contact-list {
+    display: none;
+}
+
+.profile {
+    display: none;
+    height: 100%;
+}
+
+.class-active {
+    display: block;
 }
 
 @media (max-width: 768px) {

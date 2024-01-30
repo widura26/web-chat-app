@@ -4,31 +4,19 @@ import React, {useState, useEffect} from 'react';
 // import { NavLink, useNavigate  } from 'react-router-dom';
 
 const Navbar = () => {
-    // const navigate = useNavigate();
     const [clock, setClock] = useState('');
-    
-    // const logout = async () => {
-    //     Cookies.remove('accessToken');
-    //     navigate('/');
-    // }
-    // const clockc = () => {
-    //     const currentDate = new Date();
-    //     const hours = currentDate.getHours();
-    //     const minutes = currentDate.getMinutes();
-    //     const seconds = currentDate.getSeconds();
-
-    //     setClock(`${hours}:${minutes}:${seconds}`)
-    // },
-
     
     useEffect(() => {
         setInterval(() => {
             const currentDate = new Date();
-        const hours = currentDate.getHours();
-        const minutes = currentDate.getMinutes();
-        const seconds = currentDate.getSeconds();
+            const hours = currentDate.getHours();
+            const minutes = currentDate.getMinutes();
+            const seconds = currentDate.getSeconds();
 
-        setClock(`${hours} : ${minutes} : ${seconds}`)
+            const h = hours < 10 ? '0' + hours : hours;
+            const m = minutes < 10 ? '0' + minutes : minutes;
+            const s = seconds < 10 ? '0' + seconds : seconds;
+            setClock(`${h} : ${m} : ${s}`)
         }, 1000);
     })
 

@@ -29,7 +29,7 @@ const User = (props) => {
     
     
     return (
-        <>
+        <div className={`users-in-chat ${props.activeButton === 'users' ? 'class-active' : '' }`}>
             {   loading ? ( <p>loading...</p> ) : (
                 users.map(user => (
                     <div className="user" key={user._id} id={user._id} onClick={props.showChatContainer}>
@@ -56,7 +56,7 @@ const User = (props) => {
                     </div>
                 )) ?? 'null' )
             }
-        </>
+        </div>
     )
 }
 

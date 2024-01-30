@@ -10,6 +10,7 @@ import io from 'socket.io-client';
 import Dropdown from './Dropdown';
 import Profile from './Profile';
 import User from './User';
+import Contact from './Contact';
 
 const Dashboard = () => {
 
@@ -22,9 +23,9 @@ const Dashboard = () => {
     const [chatMessages, setChatMessages] = useState([]);
     const [receiver, setReceiver] = useState('');
     const [showMenu, setShowUserMenu] = useState(false);
-    // const [users, setUsers] = useState([]);
     const [chats, setChats] = useState([]);
-    // const [loading, setLoading] = useState(true);
+    const [contact, setContact] = useState(false);
+    const [activeButton, setActiveButton] = useState('users');
     const navigate = useNavigate();
     const boxRef = useRef(null);
     const cookie = Cookies.get('accessToken');
@@ -56,23 +57,6 @@ const Dashboard = () => {
           }
     }, [cookie])
 
-    // const loadUsers = useCallback(async () => {
-    //     try {
-    //         const apiUsers = await axios.get('http://localhost:5000/users', {
-    //             headers: {
-    //                 "Content-Type": "application/json",
-    //                 Authorization: `Bearer ${cookie}`,
-    //             },
-    //         });
-    //         if(apiUsers.data.data !== null){
-    //             setUsers(apiUsers.data.data);
-    //             setLoading(false);
-    //         }
-    //     } catch (error) {
-    //         alert(error)
-    //     }
-    // }, [cookie]);
-
     const allChats = useCallback(async () => {
         try {
             const all = await axios.get('http://localhost:5000/chats', {
@@ -93,7 +77,6 @@ const Dashboard = () => {
         document.title = 'Dashboard'
         accessToken();
         userProfile();
-        // loadUsers();
         allChats();
         socket.on('loadChats', (response) => {
             const chats = response.chats;
@@ -109,11 +92,10 @@ const Dashboard = () => {
         })
         const handleClickOutside = (event) => {
             if (boxRef.current && !boxRef.current.contains(event.target)) {
-              // Klik di luar box, sembunyikan box
               setShowUserMenu(false);
             }
         };
-        // Tambahkan event listener pada dokumen
+
         document.addEventListener('click', handleClickOutside);
         return () => {
             handleClickOutside();
@@ -144,6 +126,7 @@ const Dashboard = () => {
         setProfile(true);
         setShowUserMenu(false)
     }
+    
 
     const saveChat = async (e) => {
         e.preventDefault();
@@ -211,6 +194,10 @@ const Dashboard = () => {
             </>
         )
     }
+
+    const handleButtonClick = (buttonText) => {
+        setActiveButton(buttonText);
+      };
     
     return (
         <section id="section-chat">
@@ -219,45 +206,25 @@ const Dashboard = () => {
                     <div className="input">
                         <input type='text' className='input-search-user' placeholder='Cari user'/>
                     </div>
-                    <div className='menuUser'>
-                        <span data-icon="menu" className='three-dots' onClick={showUserMenu}>
-                            <svg viewBox="0 0 24 24" height="20" width="20" preserveAspectRatio="xMidYMid meet" version="1.1" x="0px" y="0px" enableBackground="new 0 0 24 24">
-                                <title>menu</title>
-                                <path fill="currentColor" d="M12,7c1.104,0,2-0.896,2-2c0-1.105-0.895-2-2-2c-1.104,0-2,0.894-2,2 C10,6.105,10.895,7,12,7z M12,9c-1.104,0-2,0.894-2,2c0,1.104,0.895,2,2,2c1.104,0,2-0.896,2-2C13.999,9.895,13.104,9,12,9z M12,15 c-1.104,0-2,0.894-2,2c0,1.104,0.895,2,2,2c1.104,0,2-0.896,2-2C13.999,15.894,13.104,15,12,15z">
-                                </path>
-                            </svg>
-                        </span>
-                        { showMenu && <Dropdown showProfile={showProfile}/>}
+                    <div className='user-menu'>
+                        <div className='add-contact'>
+                            <span className={`material-symbols-outlined ${activeButton === 'addContact' ? 'tab-active' : '' }`} 
+                            onClick={() => handleButtonClick('addContact')}>add</span>
+                        </div>
+                        <div className='more'>
+                            <span className="material-symbols-outlined three-dots" onClick={showUserMenu}>more_vert</span>
+                            { showMenu && <Dropdown activeButton={activeButton} handleButton={() => handleButtonClick('profile')}/>}
+                        </div>
                     </div>
                 </div>
-                { profile && <Profile username={loggedInUser} />}
+
                 <div className="chat-users">
-                    <User cookie={cookie} chats={chats} sender={sender} showChatContainer={showChatContainer}/>
-                    {/* {   loading ? ( <p>loading...</p> ) : (
-                        users.map(user => (
-                            <div className="user" key={user._id} id={user._id} onClick={showChatContainer}>
-                                <div className="photo"></div>
-                                <div className="username-message">
-                                    <div className="username">
-                                        <span>{user.username}</span>
-                                    </div>
-                                    <div className="message">
-                                        {
-                                            chats.filter((chat) => ( 
-                                                    (sender.id === chat.sender_id && user._id === chat.receiver_id) || 
-                                                    (user._id === chat.sender_id && sender.id === chat.receiver_id)
-                                                    )).slice(-1).map((chat) => (
-                                                        <span key={chat._id}>{chat.message || 'hai'}</span>
-                                                    ))
-                                        }
-                                    </div>
-                                </div>
-                            </div>
-                        )) ?? 'null' )
-                    } */}
+                    <User activeButton={activeButton} cookie={cookie} chats={chats} sender={sender} showChatContainer={showChatContainer}/>
+                    <Contact activeButton={activeButton}/>
+                    <Profile activeButton={activeButton} username={loggedInUser}/>
                 </div>
                 <div className="footer">
-                    <p>Chat Application 2023</p>
+                    <p>Created By widura</p>
                 </div>
             </div>
             

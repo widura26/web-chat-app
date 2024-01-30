@@ -2,9 +2,9 @@ import './css/Profile.css'
 import vector from  '../pages/haerin.jpg';
 const Profile = (props) => {
     return (
-        <div className="profile">
+        <div className={`profile ${props.activeButton === 'profile' ? 'class-active' : '' }`}>
             <div className='back-button'>
-                <span class="material-symbols-outlined">arrow_back</span>
+                <span className="material-symbols-outlined" onClick={props.closeProfile}>arrow_back</span>
             </div>
             <div className="picture">
                 <div className="user-picture">

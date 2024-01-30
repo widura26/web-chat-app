@@ -13,7 +13,8 @@ const Dropdown = (props) => {
             <div className='user-menu'>
                 <div className='userMenu'>
                     <li>
-                        <button onClick={props.showProfile}>Profile</button>
+                        <button className={`${props.activeButton === 'profile' ? 'button-active' : ''}`}
+                        onClick={props.handleButton}>Profile</button>
                     </li>
                     <li>
                         <button>Kontak</button>
